@@ -1341,13 +1341,16 @@ class Bug(object):
         return bug
 
     @staticmethod
-    def create(tracker, product, component, short_desc, comment):
+    def create(tracker, product, component, short_desc, comment, fields):
         host = resolve_host_alias(tracker)
         https = tracker_uses_https(tracker)
         path = tracker_get_path(tracker)
         auth_user = tracker_get_auth_user(tracker)
         auth_password = tracker_get_auth_password(tracker)
         default_fields = get_default_fields(tracker)
+
+        for (field, value) in fields.iteritems():
+            default_fields[field] = value
 
         server = get_bug_server(host, path, https, auth_user, auth_password)
         bug = Bug(server)
@@ -2213,7 +2216,12 @@ def do_file(*args):
             description = get_body(commits[0])
             include_comments = False
 
-    bug = Bug.create(get_tracker(), product, component, summary, description)
+    fields = {}
+
+    if global_options.cc is not None:
+        fields['cc'] = global_options.cc
+
+    bug = Bug.create(get_tracker(), product, component, summary, description, fields)
 
     if global_options.add_url:
         add_url(bug, commits)
@@ -2345,6 +2353,10 @@ def add_fix_option():
     parser.add_option("", "--fix", metavar="<bug reference>",
                       help="attach commits and close bug")
 
+def add_cc_option():
+    parser.add_option("-c", "--cc", action="append", metavar="<email>",
+                      help="add an email to CC")
+
 if command == 'add-url':
     parser.set_usage("git bz add-url [options] <bug reference> (<commit> | <revision range>)");
     min_args = max_args = 2
@@ -2383,6 +2395,7 @@ elif command == 'edit':
 elif command == 'file':
     parser.set_usage("git bz file [options] [[<product>]]/<component>] (<commit> | <revision range>)");
     add_add_url_options()
+    add_cc_option()
     min_args = 1
     max_args = 2
 elif command == 'push':
