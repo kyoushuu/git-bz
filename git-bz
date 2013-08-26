@@ -2186,7 +2186,12 @@ def do_file(*args):
         check_add_url(commits, is_add_url=False)
 
     template = StringIO()
-    if len(commits) == 1:
+    if global_options.summary:
+        template.write(global_options.summary)
+        if global_options.description:
+            template.write("\n\n")
+            template.write(global_options.description)
+    elif len(commits) == 1:
         template.write(commits[0].subject)
         template.write("\n")
     template.write("""
@@ -2356,6 +2361,14 @@ def add_fix_option():
     parser.add_option("", "--fix", metavar="<bug reference>",
                       help="attach commits and close bug")
 
+def add_summary_option():
+    parser.add_option("-s", "--summary", metavar="<summary>",
+                      help="summary of the bug report")
+
+def add_description_option():
+    parser.add_option("-d", "--description", metavar="<description>",
+                      help="description of the bug report, requires summary")
+
 def add_cc_option():
     parser.add_option("-c", "--cc", action="append", metavar="<email>",
                       help="add an email to CC")
@@ -2402,6 +2415,8 @@ elif command == 'edit':
 elif command == 'file':
     parser.set_usage("git bz file [options] [[<product>]]/<component>] (<commit> | <revision range>)");
     add_add_url_options()
+    add_summary_option()
+    add_description_option()
     add_cc_option()
     add_version_option()
     min_args = 1
