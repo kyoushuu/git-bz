@@ -2218,6 +2218,9 @@ def do_file(*args):
 
     fields = {}
 
+    if global_options.product_version is not None:
+        fields['version'] = global_options.product_version
+
     if global_options.cc is not None:
         fields['cc'] = global_options.cc
 
@@ -2357,6 +2360,10 @@ def add_cc_option():
     parser.add_option("-c", "--cc", action="append", metavar="<email>",
                       help="add an email to CC")
 
+def add_version_option():
+    parser.add_option("-v", "--product-version", metavar="<version>",
+                      help="set product version")
+
 if command == 'add-url':
     parser.set_usage("git bz add-url [options] <bug reference> (<commit> | <revision range>)");
     min_args = max_args = 2
@@ -2396,6 +2403,7 @@ elif command == 'file':
     parser.set_usage("git bz file [options] [[<product>]]/<component>] (<commit> | <revision range>)");
     add_add_url_options()
     add_cc_option()
+    add_version_option()
     min_args = 1
     max_args = 2
 elif command == 'push':
